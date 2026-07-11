@@ -17,7 +17,7 @@ Running the Ibis Classifier & Honing the Model
 A companion to the README. Picks up right after you've dropped the Miniconda
 installer into the DataGrabber folder.
 
-The whole project is three scripts run in order:
+## The whole project is three scripts run in order:
 
 download_gbif_images.py   ->  grabs labeled photos from GBIF/iNaturalist
 split_dataset.py          ->  sorts them into train / val / test
@@ -27,9 +27,9 @@ You run them once, in that order, and you get a trained model out the end. The
 rest of this doc is about running them cleanly and then making the model better.
 
 
-Part 1 — One-time setup
+## Part 1 — One-time setup
 
-1a. Finish installing Miniconda
+### 1a. Finish installing Miniconda
 
 You've already downloaded the installer (Miniconda3-latest-<YourOS>...) into the
 DataGrabber folder. Now install it:
@@ -49,7 +49,7 @@ Check it worked — this should print a version number:
 
 bashconda --version
 
-1b. Make a clean environment
+### 1b. Make a clean environment
 
 A conda "environment" is a sandbox so this project's packages don't collide with
 anything else on your machine. Create one called ibis (the training script even
@@ -61,7 +61,7 @@ conda activate ibis
 You'll know it's active because your prompt now starts with (ibis). You have to
 run conda activate ibis every time you open a new terminal for this project.
 
-1c. Install the packages
+### 1c. Install the packages
 
 bash# needed by the downloader
 pip install requests
@@ -69,14 +69,15 @@ pip install requests
 # needed by the trainer
 pip install torch torchvision coremltools
 
-Two notes:
+# Two notes:
 
 
-GPU (optional, big speed-up): if you have an NVIDIA GPU, install the CUDA
+## 1. GPU (optional, big speed-up): if you have an NVIDIA GPU, install the CUDA
 build of PyTorch instead of the plain torch above. Grab the exact command
 from the picker at https://pytorch.org/get-started/locally/. Without a GPU it
 still works fine on CPU, just slower.
-coremltools is the picky one. It's an Apple export tool and is only
+
+## 2. coremltools is the picky one. It's an Apple export tool and is only
 properly supported on macOS and Linux. On Windows it may refuse to install
 or fail at the very last "export to Core ML" step. See Troubleshooting below if
 that bites you — everything except the final export still works on Windows.
@@ -85,11 +86,11 @@ that bites you — everything except the final export still works on Windows.
 split_dataset.py needs no packages — it's pure standard library.
 
 
-Part 2 — Running the pipeline
+## Part 2 — Running the pipeline
 
 Make sure you're in the project folder with (ibis) active, then go in order.
 
-Step 1 — Download the images
+### Step 1 — Download the images
 
 bashpython download_gbif_images.py
 
@@ -113,7 +114,7 @@ your list of photographers to credit. Don't delete it.
 
 
 
-Step 2 — Split into train / val / test
+### Step 2 — Split into train / val / test
 
 bashpython split_dataset.py
 
@@ -132,7 +133,7 @@ photos of one sighting together in the same split, so your test score is honest.
 
 It copies by default (your originals in data/ are untouched).
 
-Step 3 — Train and export
+### Step 3 — Train and export
 
 bashpython train_ibis.py
 
@@ -162,7 +163,7 @@ That .mlpackage is a folder; inside it are the files you already have as samples
 baked in, so the app just feeds it an RGB image and reads out the probabilities.
 
 
-Part 3 — Reading the scorecard
+### Part 3 — Reading the scorecard
 
 At the end, train_ibis.py prints something like:
 
@@ -189,7 +190,7 @@ You usually can't max both at once; pick the one that fits your app and tune
 toward it.
 
 
-Part 4 — Honing the model
+### Part 4 — Honing the model
 
 Improving a model is a loop, not a one-shot. Change one thing, retrain, look
 at val_acc and the gap, keep it or revert. Change several things at once and you
@@ -215,7 +216,7 @@ actually snap (phone quality, odd angles, bad light). A model that aces clean
 iNaturalist shots can still flop on a blurry backyard photo.
 
 
-Rule 2: read the gap, then pick the right knob
+## Rule 2: read the gap, then pick the right knob
 
 Look at the gap (train_acc − val_acc) on the last few epochs:
 
@@ -233,7 +234,7 @@ Data augmentation already helps here (random crops/flips/color jitter in
 train_tf) — adding more positives helps most of all.
 
 
-If you're underfitting (both low), turn these UP:
+## If you're underfitting (both low), turn these UP:
 
 
 UNFREEZE_LAST_N (currently 3) — how many backbone layers get fine-tuned.
@@ -242,7 +243,7 @@ EPOCHS_HEAD / EPOCHS_FINETUNE — let it train longer. (Early stopping via
 PATIENCE means it won't waste time if it plateaus.)
 
 
-Learning rates — the touchiest knobs:
+## Learning rates — the touchiest knobs:
 
 
 LR_HEAD (1e-3) trains the fresh head; can be relatively high.
@@ -251,7 +252,7 @@ pretrained features. If fine-tuning makes things worse, this is too high —
 lower it (5e-6). If fine-tuning does nothing, nudge it up (2e-5).
 
 
-Other useful ones:
+## Other useful ones:
 
 
 PATIENCE (5) — epochs to wait for improvement before stopping a phase.
@@ -262,7 +263,7 @@ IMG_SIZE (224) — bigger can help accuracy but is slower and memory-hungry;
 reason.
 
 
-A sane tuning recipe
+## A sane tuning recipe
 
 
 Run once with the defaults. Note val_acc and the gap — that's your baseline.
@@ -277,7 +278,7 @@ Whenever you change the actual images in data/, re-run split_dataset.py before
 retraining so the new photos make it into the splits.
 
 
-Part 5 — Pointing it at a different animal
+## Part 5 — Pointing it at a different animal
 
 The pipeline isn't ibis-specific. To retarget it, edit the config block at the top
 of download_gbif_images.py:
@@ -300,7 +301,7 @@ rename OUT_WEIGHTS / OUT_COREML in train_ibis.py so the output isn't still
 called "ibis".)
 
 
-Part 6 — Troubleshooting
+## Part 6 — Troubleshooting
 
 Windows/macOS: crash with "An attempt has been made to start a new process
 before the current process has finished its bootstrapping phase" (or a
