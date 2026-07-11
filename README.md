@@ -9,6 +9,9 @@ Except instead of Linux, do it for your OS (mac or windows).
 
 Whatever you download from that, make sure you place it inside of DataGrabber folder. 
 
+
+# CLAUDE RECOMMENDATIONS BELOW
+
 Running the Ibis Classifier & Honing the Model
 
 A companion to the README. Picks up right after you've dropped the Miniconda
